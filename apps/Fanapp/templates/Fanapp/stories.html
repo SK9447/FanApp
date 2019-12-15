@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+        crossorigin="anonymous">
+    <title>Users</title>
+    <style>
+        h1 {
+            vertical-align: top;
+        }
+        .header{
+            display: inline-block;
+            vertical-align: top;
+            margin: 10px 0 0px 20px;
+
+        }
+        .new_story{
+            display: inline-block;
+            margin-left: 10px;
+        }
+        .stats{
+            margin-left: 10px;
+        }
+        #introduction{
+            margin-right: 30px;
+        }
+        #mark_table{
+            margin-top: 200px;
+        }
+        #story_table{
+            margin-top: 30px;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-sm bg-grey">
+        <h4 id="introduction" class='header'>Hello {{ user.first_name }}</h4>
+        <form method='post' action="/logout">
+            {% csrf_token %}
+            <button type="submit" value='submit' id="logout" class="btn btn-danger">Logout</button>
+        </form>
+        <a class="new_story" href="/new">Write Your Story!</a>
+        <a class="stats" href="/stats">View stats!</a>
+    </nav>
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li {% if message.tags %} class="{{message.tags}}" {% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    <div id='story_table'>
+        <table class="table">
+            <thead>
+                <p>Your Stories</p>
+                <tr>
+                    <th scope="col">Topic</th>
+                    <th scope="col">Date added</th>
+                    <th scope="col">Edit</th>
+                    <th scope="col">Delete Story</th>
+                    <th scope='col'>Mark Story</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for Story in stories %}
+                <tr>
+                    <th scope="row">{{ Story.topic }}</th>
+                    <td>{{ Story.created_at }}</td>
+                    <td><a href="/edit/{{Story.id}}">Edit</a></td>
+                    <td>
+                        <form action="/delete/{{Story.id}}" method='POST'>
+                            {% csrf_token %}
+                            <button class="btn btn-danger" type="submit">Remove</button>
+                        </form>
+                    </td>
+                    <td>
+                        <form action="/mark" method='POST'>
+                            {% csrf_token %}
+                            <input type="hidden" name='user_id' value="{{ user.id}}">
+                            <input type="hidden" name='story_topic' value="{{ Story.topic }}">
+                            <input type="hidden" name='story_id' value="{{ Story.id }}">
+                            <input type="hidden" name='story_created' value="{{ Story.created_at }}">
+                            <button class="btn btn-success" type="submit">Mark</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div id='mark_table'>
+        <table class="table">
+            <thead>
+                <p>Marked stories</p>
+                <tr>
+                    <th scope="col">Topic</th>
+                    <th scope="col">Mark</th>
+                    <th scope="col">Date added</th>
+                    <th scope="col">Date Marked</th>
+                    <th scope="col">Likes</th>
+                    <th scope="col">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for mark in marked_stories %}
+                <tr>
+                    <th scope="row">{{ mark.topic }}</th>
+                    <td>{{ mark.user.first_name }}</td>
+                    <td>{{ mark.date_added }}</td>
+                    <td>{{ mark.marked_at }}</td>
+                    <td>{{ mark.likes.count }}</td>
+                    <td><form action="/like" method='POST'>
+                        {% csrf_token %}
+                        <input type="hidden" name='mark_id' value="{{ mark.id }}">
+                        <input type="hidden" name='user_id' value="{{ user.id }}">
+                        <button class="btn btn-success" type="submit">Like</button>
+                    </form></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+
+</html>
